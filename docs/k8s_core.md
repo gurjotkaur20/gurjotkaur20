@@ -348,33 +348,139 @@ The **Container Runtime** is the software responsible for **running containers**
 
 ## Networking
 
+Kubernetes networking enables communication between pods, services, and external traffic. It follows a flat network model where every pod gets its own IP address.
+
 ### CNI (Container Network Interface)
+
+**CNI** is a specification and library for configuring network interfaces in Linux containers.
+
+**Key Concepts:**
+- **Plugin-based**: Different network implementations (Calico, Flannel, Cilium)
+- **Pod Networking**: Assigns IP addresses to pods
+- **Network Policies**: Controls traffic between pods
+- **Multi-host**: Enables pod communication across nodes
+
+**CNI Workflow:**
+```
+Kubelet → CNI Plugin → Network Setup → Pod gets IP → Pod ready
+```
 
 ### Pod-to-Pod Communication
 
+Kubernetes networking model ensures **every pod can communicate with every other pod** without NAT.
+
 #### Same Node Communication
+
+**Direct Communication** via the node's internal network:
+```
+Pod A (10.244.1.2) → Node Bridge → Pod B (10.244.1.3)
+```
+
+**Process:**
+1. Pods share the same node network namespace
+2. Communication via Linux bridge (docker0/cni0)
+3. Direct Layer 2 switching
+4. No additional routing needed
 
 #### Cross-Node Communication
 
+**Routed Communication** across different nodes:
+```
+Pod A (Node1: 10.244.1.2) → Node Network → Pod B (Node2: 10.244.2.3)
+```
+
+**Process:**
+1. CNI plugin configures routing between nodes
+2. Overlay networks (VXLAN) or direct routing
+3. Each node has unique pod CIDR range
+4. Inter-node routing via CNI implementation
+
+**Network Flow:**
+```
+Pod A → Node1 Bridge → Node1 Interface → Network → Node2 Interface → Node2 Bridge → Pod B
+```
+
 ### Services
-
-#### ClusterIP
-
-#### NodePort
-
-#### LoadBalancer
+Check in detail in [Kubernetes services in detail](./k8s_services.md)
 
 #### Ingress
 
+**Ingress** provides **HTTP/HTTPS routing** to services from outside the cluster.
+
+**Key Features:**
+- **Layer 7 Load Balancing**: Host and path-based routing
+- **SSL Termination**: HTTPS certificate management
+- **Single Entry Point**: One load balancer for multiple services
+- **Cost Effective**: Shared infrastructure
+
+**Ingress Components:**
+- **Ingress Controller**: Implements the ingress (NGINX, Traefik, HAProxy)
+- **Ingress Resource**: Configuration defining routing rules
+
+**Example Traffic Flow:**
+```
+Internet → Load Balancer → Ingress Controller → Service → Pods
+         (myapp.com/api → backend-service)
+         (myapp.com/ → frontend-service)
+```
+
 ### CNI Plugins
 
+Popular CNI implementations with different features and performance characteristics:
+
 #### Calico
+- **Network Policies**: Advanced security rules
+- **BGP Routing**: Scalable pure L3 approach
+- **Performance**: High performance, no overlay
+- **Use Case**: Security-focused, large clusters
 
 #### Flannel
+- **Simplicity**: Easy setup and configuration
+- **Overlay Network**: VXLAN-based
+- **Performance**: Good for small/medium clusters
+- **Use Case**: Simple deployments, getting started
 
 #### Cilium
+- **eBPF-based**: Kernel-level networking and security
+- **Observability**: Advanced traffic monitoring
+- **Performance**: High performance with eBPF
+- **Use Case**: Modern clusters, security, observability
+
+**CNI Selection Criteria:**
+```
+┌─────────────┬──────────────┬──────────────┬──────────────┐
+│   Feature   │   Calico     │   Flannel    │   Cilium     │
+├─────────────┼──────────────┼──────────────┼──────────────┤
+│ Complexity  │ Medium       │ Low          │ High         │
+│ Performance │ High         │ Medium       │ Very High    │
+│ Security    │ Advanced     │ Basic        │ Advanced     │
+│ Observability│ Good        │ Basic        │ Excellent    │
+└─────────────┴──────────────┴──────────────┴──────────────┘
+```
 
 ### DNS Resolution
+
+**Step-by-step DNS resolution inside Kubernetes:**
+
+**1. App issues a DNS query**
+- The application in the pod makes a DNS request (e.g., `my-service`) using the pod's resolver
+
+**2. Pod uses /etc/resolv.conf**
+- The pod's `/etc/resolv.conf` points to the CoreDNS ClusterIP (e.g., `nameserver 10.96.0.10`) and search domains (so short names are expanded)
+
+**3. Query sent to CoreDNS ClusterIP**
+- The packet goes to the ClusterIP for kube-dns/CoreDNS. kube-proxy routes the packet to one of the CoreDNS pods
+
+**4. CoreDNS receives the query**
+- CoreDNS uses its kubernetes plugin and reads Service/Endpoint (or EndpointSlice) info from the Kubernetes API to resolve names
+
+**5. CoreDNS returns the answer**
+- **For a normal Service** → returns the Service ClusterIP (A record)
+- **For a headless Service** → returns the backend pod IP(s)
+- **For unknown names** → CoreDNS forwards to external DNS (if configured)
+
+**6. Pod connects to returned IP**
+- The application uses the IP returned by CoreDNS to open the connection
 
 ---
 
