@@ -66,7 +66,27 @@ This document covers essential Kubernetes concepts for administrators, DevOps en
 
 The control plane manages the cluster and makes global decisions about the cluster (scheduling, scaling, etc.).
 
-### Control Plane Components
+
+![K8s architecture](image.png)
+
+### Master Node (Control Plane) Overview
+
+The **Master Node** (also called the **Control Plane**) is the brain of the Kubernetes cluster. It is responsible for managing whole cluster. It monitors the health check of all nodes in the cluster. It stores the members information regarding the different nodes, planning which containers are scheduled to which worker nodes, monitoring the containers and nodes, etc. So, when a worker node failed, it moves the workload from failed node to another healthy worker node. Kubernetes master is responsible for scheduling, provisioning, configuring and exposing API’s to the client. So, all these done by a master node using the components called as control plane components. Kubernetes takes care of service discovery, scaling, load balancing, self healing, leader election, etc. therefore, developers no longer have to build these services inside of their application.
+
+```
+┌─────────────────────────────────────────┐
+│         Master Node / Control Plane     │
+├─────────────────────────────────────────┤
+│ • API Server (kube-apiserver)          │
+│   → REST API endpoint, entry point     │
+│ • Scheduler (kube-scheduler)           │
+│   → Pod placement decisions            │
+│ • Controller Manager (kube-controller) │
+│   → Reconciliation loop, resource mgmt │
+│ • ETCD (Data Store)                    │
+│   → Persistent cluster state storage   │
+└─────────────────────────────────────────┘
+```
 
 #### API Server
 
@@ -205,13 +225,67 @@ The control plane components work together in a coordinated manner to manage the
 
 **Flow of Operations:**
 ```
-User/kubectl → API Server → ETCD (storage)
-                    ↓
-            Controller Manager (watches ETCD for changes)
-                    ↓
-            Scheduler (assigns pods to nodes)
-                    ↓
-            API Server → ETCD (updates pod assignments)
+User
+
+kubectl apply
+      |
+      v
++----------------+
+| API Server     |
++----------------+
+      |
+      v
+Authentication
+      |
+Authorization
+      |
+Admission
+      |
+Validation
+      |
+      v
++----------------+
+| etcd           |
++----------------+
+      ^
+      |
+Controller Manager watches
+      |
+Deployment Controller
+      |
+ReplicaSet Controller
+      |
+Creates Pods
+      |
+      v
++----------------+
+| API Server     |
++----------------+
+      |
+      v
+Scheduler watches
+      |
+Find node
+      |
+Assign nodeName
+      |
+      v
+API Server
+      |
+      v
+kubelet watches
+      |
+Container Runtime
+      |
+CNI Plugin
+      |
+Pod starts
+      |
+      v
+API Server
+      |
+      v
+etcd updated
 ```
 
 **Example Complete Flow:**
@@ -508,6 +582,18 @@ Popular CNI implementations with different features and performance characterist
 
 ## Scheduling
 
+Kubernetes provides multiple mechanisms to control pod placement and scheduling decisions. The following table compares the main scheduling strategies:
+
+| Feature | nodeSelector | Node Affinity | Taints & Tolerations |
+|---------|-------------|---------------|----------------------|
+| **Purpose** | Select a node with a specific label | Advanced node selection | Prevent unwanted Pods from running on a node |
+| **Configured On** | Pod | Pod | Taint on Node, Toleration on Pod |
+| **Decision Made By** | Pod says "I want this node" | Pod says "I require/prefer this node" | Node says "Don't schedule Pods here unless they tolerate me" |
+| **Rule Type** | Hard only | Hard or Soft | Restriction with exceptions |
+| **Scheduling Behavior** | Pod is scheduled only on matching nodes | Pod is scheduled based on required or preferred rules | Pod is blocked unless it has a matching toleration |
+| **Supports Expressions** | No | Yes (In, NotIn, Exists, Gt, Lt) | No (matches taints) |
+| **Typical Use Case** | GPU nodes, SSD nodes | Zone, instance type, GPU preference | Reserve GPU, database, or master nodes |
+
 ### Node Selection
 
 #### nodeSelector
@@ -517,6 +603,26 @@ Popular CNI implementations with different features and performance characterist
 ### Taints and Tolerations
 
 ### Pod Priority and Preemption
+
+**Pod Priority and Preemption** allow you to specify the relative importance of pods. Higher-priority pods can preempt (remove) lower-priority pods to acquire resources.
+
+**Key Points:**
+- **PriorityClass**: Defines priority levels (e.g., critical, standard, low)
+- **Pod Assignment**: Pods reference a PriorityClass in their spec
+- **Preemption**: High-priority pending pods can evict lower-priority running pods
+- **Graceful Termination**: Evicted pods get a grace period before termination
+- **Use Cases**: Ensure critical workloads always have resources
+
+**Example:**
+```yaml
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: high-priority
+value: 1000
+globalDefault: false
+preemptionPolicy: PreemptLowerPriority
+```
 
 ### Workload Types
 
