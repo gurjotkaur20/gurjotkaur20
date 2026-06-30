@@ -4,22 +4,28 @@ This document provides a consolidated, clear, and interview-ready explanation of
 
 ## Table of Contents
 
-- 1. [What Is a Kubernetes Service?](#what-is-a-kubernetes-service)
-- 2. [Types of Kubernetes Services](#types-of-kubernetes-services)
-  - [2.1 ClusterIP (Default)](#1-clusterip-default)
-  - [2.2 NodePort](#2-nodeport)
-  - [2.3 LoadBalancer](#3-loadbalancer)
-    - [How It Works Internally](#how-it-works-internally)
-    - [Use Cases](#use-cases)
-    - [Traffic Flow Details](#traffic-flow-details)
-    - [Why NodePort Is Required](#why-nodeport-is-required)
-  - [2.4 ExternalName](#4-externalname)
-  - [2.5 Headless Service (`clusterIP: None`)](#5-headless-service-clusterip-none)
-    - [How It Works Internally](#how-it-works-internally-1)
-    - [Why Headless?](#why-headless)
-    - [Use Cases](#use-cases-1)
-    - [DNS Resolution Process](#dns-resolution-process)
-- 3. [LoadBalancer Service vs Ingress Controller + ClusterIP](#loadbalancer-service-vs-ingress-controller--clusterip)
+1. What Is a Kubernetes Service?
+2. Types of Kubernetes Services  
+   ├── 2.1 ClusterIP (Default)  
+   ├── 2.2 NodePort  
+   ├── 2.3 LoadBalancer  
+   │   ├── 2.3.1 How It Works Internally  
+   │   ├── 2.3.2 Use Cases  
+   │   ├── 2.3.3 Traffic Flow Details  
+   │   └── 2.3.4 Why NodePort Is Required  
+   ├── 2.4 ExternalName  
+   └── 2.5 Headless Service (clusterIP: None)  
+       ├── 2.5.1 How It Works Internally  
+       ├── 2.5.2 Why Headless?  
+       ├── 2.5.3 Use Cases  
+       └── 2.5.4 DNS Resolution Process  
+3. LoadBalancer Service vs Ingress Controller + ClusterIP  
+   ├── 3.1 Approach 1: LoadBalancer Service  
+   ├── 3.2 Approach 2: Ingress Controller + ClusterIP  
+   ├── 3.3 Detailed Comparison  
+   ├── 3.4 Routing Capabilities  
+   ├── 3.5 When to Use Each  
+   └── 3.6 Recommendation  
 
 ---
 
