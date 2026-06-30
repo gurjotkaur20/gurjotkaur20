@@ -4,28 +4,28 @@ This document provides a consolidated, clear, and interview-ready explanation of
 
 ## Table of Contents
 
-1. What Is a Kubernetes Service?
-2. Types of Kubernetes Services  
-   ├── 2.1 ClusterIP (Default)  
-   ├── 2.2 NodePort  
-   ├── 2.3 LoadBalancer  
-   │   ├── 2.3.1 How It Works Internally  
-   │   ├── 2.3.2 Use Cases  
-   │   ├── 2.3.3 Traffic Flow Details  
-   │   └── 2.3.4 Why NodePort Is Required  
-   ├── 2.4 ExternalName  
-   └── 2.5 Headless Service (clusterIP: None)  
-       ├── 2.5.1 How It Works Internally  
-       ├── 2.5.2 Why Headless?  
-       ├── 2.5.3 Use Cases  
-       └── 2.5.4 DNS Resolution Process  
-3. LoadBalancer Service vs Ingress Controller + ClusterIP  
-   ├── 3.1 Approach 1: LoadBalancer Service  
-   ├── 3.2 Approach 2: Ingress Controller + ClusterIP  
-   ├── 3.3 Detailed Comparison  
-   ├── 3.4 Routing Capabilities  
-   ├── 3.5 When to Use Each  
-   └── 3.6 Recommendation  
+1. [1. What Is a Kubernetes Service?](#1-what-is-a-kubernetes-service)  
+2. [2. Types of Kubernetes Services](#2-types-of-kubernetes-services)  
+   ├── [2.1 ClusterIP (Default)](#21-clusterip-default)  
+   ├── [2.2 NodePort](#22-nodeport)  
+   ├── [2.3 LoadBalancer](#23-loadbalancer)  
+   │   ├── [2.3.1 How It Works Internally](#231-how-it-works-internally)  
+   │   ├── [2.3.2 Use Cases](#232-use-cases)  
+   │   ├── [2.3.3 Traffic Flow Details](#233-traffic-flow-details)  
+   │   └── [2.3.4 Why NodePort Is Required](#234-why-nodeport-is-required)  
+   ├── [2.4 ExternalName](#24-externalname)  
+   └── [2.5 Headless Service (clusterIP: None)](#25-headless-service-clusterip-none)  
+       ├── [2.5.1 How It Works Internally](#251-how-it-works-internally)  
+       ├── [2.5.2 Why Headless?](#252-why-headless)  
+       ├── [2.5.3 Use Cases](#253-use-cases)  
+       └── [2.5.4 DNS Resolution Process](#254-dns-resolution-process)  
+3. [3. LoadBalancer Service vs Ingress Controller + ClusterIP](#3-loadbalancer-service-vs-ingress-controller--clusterip)  
+   ├── [3.1 Approach 1: LoadBalancer Service](#31-approach-1-loadbalancer-service)  
+   ├── [3.2 Approach 2: Ingress Controller + ClusterIP](#32-approach-2-ingress-controller--clusterip)  
+   ├── [3.3 Detailed Comparison](#33-detailed-comparison)  
+   ├── [3.4 Routing Capabilities](#34-routing-capabilities)  
+   ├── [3.5 When to Use Each](#35-when-to-use-each)  
+   └── [3.6 Recommendation](#36-recommendation)    
 
 ---
 
