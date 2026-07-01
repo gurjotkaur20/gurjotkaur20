@@ -306,14 +306,18 @@ resource "aws_instance" "app" {
   subnet_id = aws_subnet.main.id  # Implicit dependency
 }
 
-# Explicit dependency (when Terraform can't infer)
-resource "aws_iam_role_policy_attachment" "example" {
-  role       = aws_iam_role.example.name
-  policy_arn = aws_iam_policy.example.arn
-  
+resource "aws_instance" "app" {
+  ami           = "ami-12345"
+  instance_type = "t3.micro"
+}
+
+resource "null_resource" "configure" {
+  provisioner "local-exec" {
+    command = "./configure.sh"
+  }
+
   depends_on = [
-    aws_iam_role.example,
-    aws_iam_policy.example
+    aws_instance.app
   ]
 }
 
